@@ -1,0 +1,60 @@
+<html>
+    <script>
+        const url = "https://archive.stsci.edu/prepds/tess-data-alerts/"
+        let tess_data_alerts
+
+        fetch(url).then(data => {
+            return data.text()
+        }).then(data => {
+            document.getElementById("status").innerHTML = "Ready."
+            document.getElementById("request_button").disabled = false
+            tess_data_alerts = data
+        })
+
+        function search_for_tess_object(tess_object_number) {
+        }
+
+        function check_tess_object() {
+            const tess_object_number = document.getElementById("tess_object_number").value
+            const results = document.getElementById("results")
+            
+            results.innerHTML = "Processing...."
+
+
+            fetch(`https://cors-anywhere.herokuapp.com/exo.mast.stsci.edu/api/v0.1/exoplanets/autocomplete/?term=TIC%20${tess_object_number}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                },
+            })
+            .then(data => {
+                return data.json()
+            })
+            .then(data => {
+                const has_alert = tess_data_alerts.includes(tess_object_number)
+                const in_search = data.length != 0
+
+                console.log(data)
+
+                if (has_alert && in_search) {
+                    results.innerHTML = "#TCE"
+                } else if (has_alert) {
+                    results.innerHTML = "This is Tess Object of Interest"
+                } else if (in_search) {
+                    results.innerHTML = "@researchers"
+                } else {
+                    results.innerHTML = "can't find it."
+                }
+            })
+
+
+        }
+
+    </script>
+    <body>
+        <div id="status">Loading...</div>
+        <input type="text" id="tess_object_number">
+        <input type="button" id="request_button" disabled=true name="button" value="click" onclick="check_tess_object()">
+        <div id="results"></div>
+    </body>
+</html>
